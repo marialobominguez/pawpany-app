@@ -8,6 +8,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.marialobo.pawpany.ui.screens.PantallaBienvenida
 import com.marialobo.pawpany.ui.screens.InicioORegistro
+import com.marialobo.pawpany.ui.screens.InicioSesion
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -24,7 +25,18 @@ class MainActivity : ComponentActivity() {
                     })
                 }
                 composable("inicio") {
-                    InicioORegistro()
+                    InicioORegistro(
+                        onLoginClick = { navController.navigate("login") },
+                        onRegistroClick = { navController.navigate("registro_rol") }
+                    )
+                }
+                composable("login") {
+                    InicioSesion(
+                        onBackClick = { navController.popBackStack() } // para volver atrás con la flecha
+                    )
+                }
+                composable("registro_rol") {
+                    // TODO: la pantalla en la quue eliges el rol con el que te registras
                 }
             }
         }

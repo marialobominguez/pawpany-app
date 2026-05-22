@@ -18,7 +18,7 @@ import com.marialobo.pawpany.R
 import com.marialobo.pawpany.ui.components.BackgroundWrapper
 
 @Composable
-fun InicioORegistro() {
+fun InicioORegistro(onLoginClick: () -> Unit, onRegistroClick: () -> Unit) {
     BackgroundWrapper {
         Column(
             modifier = Modifier.fillMaxSize().padding(24.dp),
@@ -58,7 +58,7 @@ fun InicioORegistro() {
                 horizontalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 Button(
-                    onClick = { /* TODO */ },
+                    onClick = onLoginClick,
                     modifier = Modifier.weight(1f),
                     colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF333333))
                 ) {
@@ -66,7 +66,7 @@ fun InicioORegistro() {
                 }
 
                 Button(
-                    onClick = { /* TODO */ },
+                    onClick = onRegistroClick,
                     modifier = Modifier.weight(1f),
                     colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF333333))
                 ) {

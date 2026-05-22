@@ -11,7 +11,9 @@ import androidx.navigation.compose.rememberNavController
 import com.marialobo.pawpany.ui.screens.PantallaBienvenida
 import com.marialobo.pawpany.ui.screens.InicioORegistro
 import com.marialobo.pawpany.ui.screens.InicioSesion
+import com.marialobo.pawpany.ui.screens.RegistroCuidador
 import com.marialobo.pawpany.ui.screens.RegistroEligeRol
+import com.marialobo.pawpany.ui.screens.RegistroMascota
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -39,14 +41,23 @@ class MainActivity : ComponentActivity() {
                     )
                 }
                 composable("registro_rol") {
-                    val context = LocalContext.current
                     RegistroEligeRol(
                         onBackClick = { navController.popBackStack() },
                         onRoleSelected = { rol ->
-                            Toast.makeText(context, "Has elegido: $rol", Toast.LENGTH_SHORT).show()
-                            // TODO: navegar al formulario correspondiente dependiendo de la tarjeta elegid
+                            if (rol == "dueño") {
+                                navController.navigate("registro_mascota")
+                            } else {
+                                navController.navigate("registro_cuidador")
+                            }
                         }
                     )
+                }
+
+                composable("registro_mascota") {
+                    RegistroMascota(onBackClick = { navController.popBackStack() })
+                }
+                composable("registro_cuidador") {
+                    RegistroCuidador(onBackClick = { navController.popBackStack() })
                 }
             }
         }

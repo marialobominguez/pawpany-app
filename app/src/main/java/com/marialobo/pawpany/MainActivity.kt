@@ -3,45 +3,30 @@ package com.marialobo.pawpany
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
-import com.marialobo.pawpany.ui.theme.PawPanyTheme
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
+import com.marialobo.pawpany.ui.screens.PantallaBienvenida
+import com.marialobo.pawpany.ui.screens.InicioORegistro
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
         setContent {
-            PawPanyTheme {
-                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    Greeting(
-                        name = "Android",
-                        modifier = Modifier.padding(innerPadding)
-                    )
+            val navController = rememberNavController()
+
+            NavHost(navController = navController, startDestination = "bienvenida") {
+                composable("bienvenida") {
+                    PantallaBienvenida(onTimeout = {
+                        navController.navigate("inicio") {
+                            popUpTo("bienvenida") { inclusive = true }
+                        }
+                    })
+                }
+                composable("inicio") {
+                    InicioORegistro()
                 }
             }
         }
-    }
-}
-
-@Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
-    Text(
-        text = "Hello $name!",
-        modifier = modifier
-    )
-}
-
-@Preview(showBackground = true)
-@Composable
-fun GreetingPreview() {
-    PawPanyTheme {
-        Greeting("Android")
     }
 }

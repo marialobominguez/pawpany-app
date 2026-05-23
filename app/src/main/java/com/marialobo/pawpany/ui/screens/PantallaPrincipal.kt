@@ -63,7 +63,7 @@ fun PantallaPrincipal() {
 }
 
 // pantallas provisionales. TODO: cambiar a las pantallas reales
-@Composable fun PantallaFeed() { Text("Pantalla de Inicio") }
+//@Composable fun PantallaFeed() { Text("Pantalla de Inicio") }
 @Composable fun PantallaBusqueda() { Text("Pantalla de Búsqueda") }
 @Composable fun PantallaChat() { Text("Pantalla de Chat") }
 @Composable fun PantallaPerfil() { Text("Pantalla de Perfil") }

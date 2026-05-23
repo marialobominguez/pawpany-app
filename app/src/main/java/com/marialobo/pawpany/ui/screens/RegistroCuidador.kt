@@ -15,6 +15,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.marialobo.pawpany.ui.components.BackgroundWrapper
@@ -22,7 +23,7 @@ import com.marialobo.pawpany.ui.components.CampoFormulario
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun RegistroCuidador(onBackClick: () -> Unit) {
+fun RegistroCuidador(onBackClick: () -> Unit, onRegistroExitoso: () -> Unit) {
     val scrollState = rememberScrollState()
 
     var username by remember { mutableStateOf("") }
@@ -35,6 +36,8 @@ fun RegistroCuidador(onBackClick: () -> Unit) {
     var estudios by remember { mutableStateOf("") }
     var tarifa by remember { mutableStateOf("") }
     var sobreMi by remember { mutableStateOf("") }
+
+    var mensajeError by remember { mutableStateOf("") }
 
     BackgroundWrapper {
         Column(modifier = Modifier.fillMaxSize()) {
@@ -84,8 +87,9 @@ fun RegistroCuidador(onBackClick: () -> Unit) {
                         modifier = Modifier.size(40.dp)
                     )
                 }
+                Text("Añadir foto de perfil", color = Color.Gray, fontSize = 14.sp)
 
-                CampoFormulario("Username (Único)", "Ej: marialobo99", username) { username = it }
+                CampoFormulario("Nombre de usuario", "Ej: marialobo18", username) { username = it }
                 CampoFormulario("Correo electrónico", "Introduce tu email", email) { email = it }
                 CampoFormulario(
                     "Contraseña",
@@ -109,7 +113,7 @@ fun RegistroCuidador(onBackClick: () -> Unit) {
                 Spacer(modifier = Modifier.height(20.dp))
             }
 
-            // botón fijo
+            // mensaje de error + botón
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -117,13 +121,40 @@ fun RegistroCuidador(onBackClick: () -> Unit) {
                     .navigationBarsPadding()
                     .padding(bottom = 16.dp)
             ) {
-                Button(
-                    onClick = { /* TODO: POST API */ },
-                    modifier = Modifier.fillMaxWidth().height(50.dp),
-                    shape = RoundedCornerShape(12.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = Color.Black)
-                ) {
-                    Text("Registrar", color = Color.White, fontSize = 18.sp)
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    // si hay un error, mensaje en rojo
+                    if (mensajeError.isNotEmpty()) {
+                        Text(
+                            text = mensajeError,
+                            color = Color.Red,
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 14.sp,
+                            modifier = Modifier.padding(bottom = 8.dp),
+                            textAlign = TextAlign.Center
+                        )
+                    }
+
+                    // TODO: revisar validaciones para ver si tengo que añadir más
+                    Button(
+                        onClick = {
+                            // validación
+                            if (username.isEmpty() || email.isEmpty() || password.isEmpty()) {
+                                mensajeError = "Por favor, rellena los campos obligatorios."
+                            } else if (username == "admin") {
+                                // simulo que el usuario ya existe
+                                mensajeError = "Ese nombre de usuario ya está en uso."
+                            } else {
+                                // si t0do está bien, borro el error y pasa a la siguiente pantalla
+                                mensajeError = ""
+                                onRegistroExitoso()
+                            }
+                        },
+                        modifier = Modifier.fillMaxWidth().height(50.dp),
+                        shape = RoundedCornerShape(12.dp),
+                        colors = ButtonDefaults.buttonColors(containerColor = Color.Black)
+                    ) {
+                        Text("Registrar", color = Color.White, fontSize = 18.sp)
+                    }
                 }
             }
         }

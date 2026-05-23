@@ -8,6 +8,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.marialobo.pawpany.ui.screens.ExitoRegistro
 import com.marialobo.pawpany.ui.screens.PantallaBienvenida
 import com.marialobo.pawpany.ui.screens.InicioORegistro
 import com.marialobo.pawpany.ui.screens.InicioSesion
@@ -54,10 +55,27 @@ class MainActivity : ComponentActivity() {
                 }
 
                 composable("registro_mascota") {
-                    RegistroMascota(onBackClick = { navController.popBackStack() })
+                    RegistroMascota(
+                        onBackClick = { navController.popBackStack() },
+                        onRegistroExitoso = { navController.navigate("exito_registro") }
+                    )
                 }
                 composable("registro_cuidador") {
-                    RegistroCuidador(onBackClick = { navController.popBackStack() })
+                    RegistroCuidador(
+                        onBackClick = { navController.popBackStack() },
+                        onRegistroExitoso = { navController.navigate("exito_registro") }
+                    )
+                }
+                composable("exito_registro") {
+                    ExitoRegistro(
+                        onLoginClick = {
+                            navController.navigate("login") {
+                                // Esto limpia el historial para que si le dan a "Atrás",
+                                // no vuelvan a la pantalla de "Éxito" ni al formulario.
+                                popUpTo("inicio") { inclusive = false }
+                            }
+                        }
+                    )
                 }
             }
         }

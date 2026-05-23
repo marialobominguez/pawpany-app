@@ -17,6 +17,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.marialobo.pawpany.ui.components.BackgroundWrapper
@@ -24,7 +25,7 @@ import com.marialobo.pawpany.ui.components.CampoFormulario
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun RegistroMascota(onBackClick: () -> Unit) {
+fun RegistroMascota(onBackClick: () -> Unit, onRegistroExitoso: () -> Unit) { // para recibir la orden de viajar al éxito
     val scrollState = rememberScrollState()
 
     // para la tabla Usuario
@@ -38,6 +39,8 @@ fun RegistroMascota(onBackClick: () -> Unit) {
     var nombreMascota by remember { mutableStateOf("") }
     var especieRaza by remember { mutableStateOf("") }
     var personalidad by remember { mutableStateOf("") }
+
+    var mensajeError by remember { mutableStateOf("") } // en caso de que no pueda registrarse
 
     BackgroundWrapper {
         Column(modifier = Modifier.fillMaxSize()) {
@@ -72,7 +75,7 @@ fun RegistroMascota(onBackClick: () -> Unit) {
                 }
                 Text("Añadir foto de perfil", color = Color.Gray, fontSize = 14.sp)
 
-                CampoFormulario("Username (Único)", "Ej: marialobo99", username) { username = it }
+                CampoFormulario("Nombre de usuario", "Ej: marialobo18", username) { username = it }
                 CampoFormulario("Correo electrónico", "Introduce tu email", email) { email = it }
                 CampoFormulario("Contraseña", "Crea una contraseña", password, esPassword = true) { password = it }
                 CampoFormulario("Tu Nombre", "Introduce tu nombre", nombreUsuario) { nombreUsuario = it }
@@ -87,21 +90,47 @@ fun RegistroMascota(onBackClick: () -> Unit) {
                 Spacer(modifier = Modifier.height(20.dp)) // Espacio de desahogo al final del scroll
             }
 
-            // botón registrar fijo
+            // mensaje de error + botón
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 24.dp)
-                    .navigationBarsPadding() // evita que se tape con la barra del sistema
+                    .navigationBarsPadding()
                     .padding(bottom = 16.dp)
             ) {
-                Button(
-                    onClick = { /* TODO: POST a la API */ },
-                    modifier = Modifier.fillMaxWidth().height(50.dp),
-                    shape = RoundedCornerShape(12.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = Color.Black)
-                ) {
-                    Text("Registrar", color = Color.White, fontSize = 18.sp)
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    // si hay un error, mensaje en rojo
+                    if (mensajeError.isNotEmpty()) {
+                        Text(
+                            text = mensajeError,
+                            color = Color.Red,
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 14.sp,
+                            modifier = Modifier.padding(bottom = 8.dp),
+                            textAlign = TextAlign.Center
+                        )
+                    }
+                    // TODO: revisar validaciones para ver si tengo que añadir más
+                    Button(
+                        onClick = {
+                            // validación
+                            if (username.isEmpty() || email.isEmpty() || password.isEmpty()) {
+                                mensajeError = "Por favor, rellena los campos obligatorios."
+                            } else if (username == "admin") {
+                                // simulo que el usuario ya existe
+                                mensajeError = "Ese nombre de usuario ya está en uso."
+                            } else {
+                                // si t0do está bien, borro el error y pasa a la siguiente pantalla
+                                mensajeError = ""
+                                onRegistroExitoso()
+                            }
+                        },
+                        modifier = Modifier.fillMaxWidth().height(50.dp),
+                        shape = RoundedCornerShape(12.dp),
+                        colors = ButtonDefaults.buttonColors(containerColor = Color.Black)
+                    ) {
+                        Text("Registrar", color = Color.White, fontSize = 18.sp)
+                    }
                 }
             }
         }

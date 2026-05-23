@@ -18,7 +18,7 @@ import com.marialobo.pawpany.ui.components.BackgroundWrapper
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun InicioSesion(onBackClick: () -> Unit) {
+fun InicioSesion(onBackClick: () -> Unit, onLoginSuccess: () -> Unit) {
     // para guardar lo que el usuario escriba
     var usuario by remember { mutableStateOf("") }
     var contrasena by remember { mutableStateOf("") }
@@ -90,7 +90,7 @@ fun InicioSesion(onBackClick: () -> Unit) {
 
                 // entrar
                 Button(
-                    onClick = { /* TODO: conectar con la API */ },
+                    onClick = onLoginSuccess,
                     modifier = Modifier.fillMaxWidth().height(50.dp),
                     shape = RoundedCornerShape(12.dp),
                     colors = ButtonDefaults.buttonColors(containerColor = Color.Black)

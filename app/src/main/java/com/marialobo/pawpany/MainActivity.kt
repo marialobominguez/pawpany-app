@@ -12,6 +12,7 @@ import com.marialobo.pawpany.ui.screens.ExitoRegistro
 import com.marialobo.pawpany.ui.screens.PantallaBienvenida
 import com.marialobo.pawpany.ui.screens.InicioORegistro
 import com.marialobo.pawpany.ui.screens.InicioSesion
+import com.marialobo.pawpany.ui.screens.PantallaPrincipal
 import com.marialobo.pawpany.ui.screens.RegistroCuidador
 import com.marialobo.pawpany.ui.screens.RegistroEligeRol
 import com.marialobo.pawpany.ui.screens.RegistroMascota
@@ -38,7 +39,13 @@ class MainActivity : ComponentActivity() {
                 }
                 composable("login") {
                     InicioSesion(
-                        onBackClick = { navController.popBackStack() } // para volver atrás con la flecha
+                        onBackClick = { navController.popBackStack() },
+                        onLoginSuccess = {
+                            navController.navigate("main") {
+                                // borra el historial para no volver al Login dándole atrás
+                                popUpTo("inicio") { inclusive = true }
+                            }
+                        }
                     )
                 }
                 composable("registro_rol") {
@@ -76,6 +83,10 @@ class MainActivity : ComponentActivity() {
                             }
                         }
                     )
+                }
+
+                composable("main") {
+                    PantallaPrincipal()
                 }
             }
         }

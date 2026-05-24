@@ -22,7 +22,7 @@ import com.marialobo.pawpany.ui.components.BackgroundWrapper
 data class ChatItem(val nombre: String)
 
 @Composable
-fun PantallaChat() {
+fun PantallaChat(onChatClick: (String) -> Unit) {
     // simulo los datos que ves en tu figma
     val listaChats = listOf(
         ChatItem("Thiago Salmón"),
@@ -58,9 +58,7 @@ fun PantallaChat() {
                 items(listaChats) { chat ->
                     FilaChat(
                         chat = chat,
-                        onClick = {
-                            /* TODO: navegar a la pantalla de la conversación privada con ${chat.nombre} */
-                        }
+                        onClick = { onChatClick(chat.nombre) }
                     )
                     HorizontalDivider(
                         color = Color.LightGray.copy(alpha = 0.5f),

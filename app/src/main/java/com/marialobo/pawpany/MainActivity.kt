@@ -17,6 +17,7 @@ import com.marialobo.pawpany.ui.screens.RegistroCuidador
 import com.marialobo.pawpany.ui.screens.RegistroEligeRol
 import com.marialobo.pawpany.ui.screens.RegistroMascota
 import android.net.Uri
+import com.marialobo.pawpany.ui.screens.EditarPerfil
 import com.marialobo.pawpany.ui.screens.PantallaMensajePrivado
 
 class MainActivity : ComponentActivity() {
@@ -93,6 +94,9 @@ class MainActivity : ComponentActivity() {
                             // transformo el nombre a formato seguro antes de viajar
                             val nombreSeguro = Uri.encode(nombre)
                             navController.navigate("chat_privado/$nombreSeguro")
+                        },
+                        onEditarPerfilClick = {
+                            navController.navigate("editar_perfil")
                         }
                     )
                 }
@@ -106,7 +110,13 @@ class MainActivity : ComponentActivity() {
                         onBackClick = { navController.popBackStack() }
                     )
                 }
+                composable("editar_perfil") {
+                    EditarPerfil(
+                        rolUsuario = "dueño", // Aquí en el futuro pasaremos el rol real desde la BD
+                        onBackClick = { navController.popBackStack() }
+                    )
                 }
+            }
         }
     }
 }

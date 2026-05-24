@@ -5,8 +5,10 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.AddCircleOutline
@@ -41,20 +43,15 @@ data class Mensaje(
 fun PantallaMensajePrivado(nombreContacto: String, onBackClick: () -> Unit) {
     var textoEscrito by remember { mutableStateOf("") }
 
+    var mostrarDialogoContrato by remember { mutableStateOf(false) }
+
     // simulo conver
-    val historialMensajes = listOf(
-        Mensaje("Holaaaa!!!! ¿Podrías cuidar de mi michi?", esMio = true),
-        Mensaje("Hola! Estaría encantado de hacerlo.", esMio = false),
-        Mensaje(
-            esMio = false,
-            tipo = TipoMensaje.CONTRATO,
-            tipoContrato = "A tiempo completo.",
-            ubicacion = "Toledo",
-            fecha = "2026-06-22",
-            duracion = "3 meses",
-            salario = "1900€"
+    val historialMensajes = remember {
+        mutableStateListOf(
+            Mensaje("Holaaaa!!!! ¿Podrías cuidar de mi michi?", esMio = true),
+            Mensaje("Hola! Estaría encantado de hacerlo.", esMio = false)
         )
-    )
+    }
 
     BackgroundWrapper {
         Column(modifier = Modifier.fillMaxSize()) {
@@ -111,8 +108,8 @@ fun PantallaMensajePrivado(nombreContacto: String, onBackClick: () -> Unit) {
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 // botón adjuntar contrato
-                IconButton(onClick = { /* TODO: abrir formulario de crear contrato */ }) {
-                    Icon(Icons.Filled.AddCircleOutline, contentDescription = "Crear contrato", tint = Color.Gray, modifier = Modifier.size(28.dp))
+                IconButton(onClick = { mostrarDialogoContrato = true }) {
+                    Icon(Icons.Filled.AddCircleOutline, contentDescription = "Crear contrato", tint = Color(0xFFB55D3E), modifier = Modifier.size(28.dp))
                 }
 
                 Spacer(modifier = Modifier.width(8.dp))
@@ -132,6 +129,16 @@ fun PantallaMensajePrivado(nombreContacto: String, onBackClick: () -> Unit) {
                 )
             }
         }
+    }
+    // contrato
+    if (mostrarDialogoContrato) {
+        DialogoCrearContrato(
+            onDismiss = { mostrarDialogoContrato = false },
+            onEnviar = { contrato ->
+                historialMensajes.add(contrato) // Añadimos el contrato al chat
+                mostrarDialogoContrato = false // Cerramos el popup
+            }
+        )
     }
 }
 
@@ -213,4 +220,55 @@ fun FilaDatoContrato(titulo: String, valor: String) {
         Text(titulo, fontWeight = FontWeight.Bold, fontSize = 14.sp, color = Color.Black)
         Text(valor, fontSize = 14.sp, color = Color.DarkGray)
     }
+}
+
+// formulario que pide los contratos
+@Composable
+fun DialogoCrearContrato(
+    onDismiss: () -> Unit,
+    onEnviar: (Mensaje) -> Unit
+) {
+    var tipo by remember { mutableStateOf("") }
+    var ubicacion by remember { mutableStateOf("") }
+    var fecha by remember { mutableStateOf("") }
+    var duracion by remember { mutableStateOf("") }
+    var salario by remember { mutableStateOf("") }
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        confirmButton = {
+            Button(
+                onClick = {
+                    val nuevoContrato = Mensaje(
+                        esMio = true,
+                        tipo = TipoMensaje.CONTRATO,
+                        tipoContrato = tipo,
+                        ubicacion = ubicacion,
+                        fecha = fecha,
+                        duracion = duracion,
+                        salario = salario
+                    )
+                    onEnviar(nuevoContrato)
+                },
+                colors = ButtonDefaults.buttonColors(containerColor = Color.Black),
+                shape = RoundedCornerShape(8.dp)
+            ) { Text("Enviar Contrato") }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) { Text("Cancelar", color = Color.Gray) }
+        },
+        title = { Text("Nueva Solicitud", fontWeight = FontWeight.Bold) },
+        text = {
+            Column(modifier = Modifier.verticalScroll(rememberScrollState()),
+                verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                OutlinedTextField(value = tipo, onValueChange = { tipo = it }, label = { Text("Tipo (Ej: Tiempo completo)") })
+                OutlinedTextField(value = ubicacion, onValueChange = { ubicacion = it }, label = { Text("Ubicación") })
+                OutlinedTextField(value = fecha, onValueChange = { fecha = it }, label = { Text("Fecha (AAAA-MM-DD)") })
+                OutlinedTextField(value = duracion, onValueChange = { duracion = it }, label = { Text("Duración") })
+                OutlinedTextField(value = salario, onValueChange = { salario = it }, label = { Text("Salario (Ej: 1200€)") })
+            }
+        },
+        containerColor = Color.White,
+        shape = RoundedCornerShape(16.dp)
+    )
 }

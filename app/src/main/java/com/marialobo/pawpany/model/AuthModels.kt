@@ -66,3 +66,11 @@ data class PerfilCuidadorOut(
     val estudios: String,
     val tarifa: Double
 )
+
+data class MensajeOut(
+    val id: Int,
+    val id_remitente: Int,
+    val id_destinatario: Int,
+    val contenido: String,
+    val fecha_envio: String
+)

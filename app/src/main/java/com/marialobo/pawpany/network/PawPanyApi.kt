@@ -4,6 +4,7 @@ import com.marialobo.pawpany.model.LoginRequest
 import com.marialobo.pawpany.model.LoginResponse
 import com.marialobo.pawpany.model.MascotaCreate
 import com.marialobo.pawpany.model.MascotaOut
+import com.marialobo.pawpany.model.MensajeOut
 import com.marialobo.pawpany.model.PerfilCuidadorCreate
 import com.marialobo.pawpany.model.PerfilCuidadorOut
 import com.marialobo.pawpany.model.UsuarioCreate
@@ -42,4 +43,7 @@ interface PawPanyApi {
 
     @GET("perfiles-cuidadores")
     fun obtenerCuidadores(): Call<List<PerfilCuidadorOut>>
+
+    @GET("mensajes")
+    fun obtenerMensajes(@Header("x-token") token: String): Call<List<MensajeOut>>
 }

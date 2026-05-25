@@ -23,10 +23,6 @@ data class UsuarioCreate(
     val rol: String
 )
 
-data class UsuarioOut(
-    val id: Int,
-    val email: String
-)
 
 // --- MOLDE DE MASCOTA ---
 data class MascotaCreate(
@@ -43,4 +39,29 @@ data class PerfilCuidadorCreate(
     val sobre_mi: String,
     val tarifa: Double, // Double porque en tu base de datos es un DECIMAL
     val id_usuario: Int
+)
+
+
+// Modifica el que ya tenías para que también recoja el nombre y el rol
+data class UsuarioOut(
+    val id: Int,
+    val email: String,
+    val nombre: String,
+    val rol: String
+)
+
+// Añade estos dos nuevos para leer el Feed
+data class MascotaOut(
+    val id: Int,
+    val nombre: String,
+    val especie: String?, // Pueden ser nulos en tu BD
+    val raza: String?,
+    val id_usuario: Int
+)
+
+data class PerfilCuidadorOut(
+    val id: Int,
+    val id_usuario: Int,
+    val estudios: String,
+    val tarifa: Double
 )

@@ -3,11 +3,14 @@ package com.marialobo.pawpany.network
 import com.marialobo.pawpany.model.LoginRequest
 import com.marialobo.pawpany.model.LoginResponse
 import com.marialobo.pawpany.model.MascotaCreate
+import com.marialobo.pawpany.model.MascotaOut
 import com.marialobo.pawpany.model.PerfilCuidadorCreate
+import com.marialobo.pawpany.model.PerfilCuidadorOut
 import com.marialobo.pawpany.model.UsuarioCreate
 import com.marialobo.pawpany.model.UsuarioOut
 import retrofit2.Call
 import retrofit2.http.Body
+import retrofit2.http.GET
 import retrofit2.http.Header
 import retrofit2.http.POST
 
@@ -30,4 +33,13 @@ interface PawPanyApi {
         @Header("x-token") token: String,
         @Body perfil: PerfilCuidadorCreate
     ): Call<Void>
+
+    @GET("usuarios")
+    fun obtenerUsuarios(): Call<List<UsuarioOut>>
+
+    @GET("mascotas")
+    fun obtenerMascotas(): Call<List<MascotaOut>>
+
+    @GET("perfiles-cuidadores")
+    fun obtenerCuidadores(): Call<List<PerfilCuidadorOut>>
 }

@@ -36,3 +36,11 @@ data class MascotaCreate(
     val personalidad_libre: String,
     val id_usuario: Int
 )
+
+// --- MOLDE DE PERFIL CUIDADOR ---
+data class PerfilCuidadorCreate(
+    val estudios: String,
+    val sobre_mi: String,
+    val tarifa: Double, // Double porque en tu base de datos es un DECIMAL
+    val id_usuario: Int
+)

@@ -47,7 +47,8 @@ data class UsuarioOut(
     val id: Int,
     val email: String,
     val nombre: String,
-    val rol: String
+    val rol: String,
+    val ubicacion: String? = "Ubicación desconocida"
 )
 
 // Añade estos dos nuevos para leer el Feed

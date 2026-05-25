@@ -19,6 +19,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.marialobo.pawpany.ui.components.BackgroundWrapper
 
 // datos de las tarjetas que se mostrarán
 data class ResultadoBusqueda(
@@ -29,7 +30,7 @@ data class ResultadoBusqueda(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun PantallaBusqueda(rolUsuario: String = "dueño") {
+fun PantallaBusqueda(rolUsuario: String = "dueño", onVerPerfilClick: (String, String) -> Unit) {
     // variable de estado que guarda lo que el usuario escribe
     var textoBusqueda by remember { mutableStateOf("") }
 
@@ -59,11 +60,10 @@ fun PantallaBusqueda(rolUsuario: String = "dueño") {
                     it.ubicacion.contains(textoBusqueda, ignoreCase = true)
         }
     }
-
+    BackgroundWrapper {
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFFFFF7EE))
     ) {
         // header y barra búsqueda
         Column(
@@ -86,7 +86,13 @@ fun PantallaBusqueda(rolUsuario: String = "dueño") {
                 value = textoBusqueda,
                 onValueChange = { textoBusqueda = it }, // actualiza el texto con cada pulsación
                 placeholder = { Text("Escribe la ubicación o nombre...", color = Color.Gray) },
-                leadingIcon = { Icon(Icons.Filled.Search, contentDescription = "Buscar", tint = Color.Gray) },
+                leadingIcon = {
+                    Icon(
+                        Icons.Filled.Search,
+                        contentDescription = "Buscar",
+                        tint = Color.Gray
+                    )
+                },
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(12.dp),
                 singleLine = true,
@@ -116,12 +122,16 @@ fun PantallaBusqueda(rolUsuario: String = "dueño") {
                 FilaResultado(
                     resultado = resultado,
                     rolUsuario = rolUsuario,
-                    onClick = { /* TODO: Navegar al perfil de ${resultado.nombre} */ }
+                    onClick = {
+                        val rolDestino = if (rolUsuario == "dueño") "cuidador" else "dueño"
+                        onVerPerfilClick(resultado.nombre, rolDestino)
+                    }
                 )
                 HorizontalDivider(color = Color.LightGray.copy(alpha = 0.5f), thickness = 1.dp)
             }
         }
     }
+}
 }
 
 // disño del resultado de búsqueda

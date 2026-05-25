@@ -19,14 +19,20 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.marialobo.pawpany.ui.components.BackgroundWrapper
 
 // modelos de datos
 data class Cuidador(val nombre: String, val estrellas: Int, val distancia: String)
-data class MascotaFeed(val nombre: String, val especie: String, val raza: String, val distancia: String)
+data class MascotaFeed(
+    val nombre: String,
+    val especie: String,
+    val raza: String,
+    val distancia: String
+)
 
 // pantalla de búsqueda a la que le paso el rol (por defecto dueño para pruebas)
 @Composable
-fun PantallaFeed(rolUsuario: String = "cuidador") {
+fun PantallaFeed(rolUsuario: String = "cuidador", onVerPerfilClick: (String, String) -> Unit) {
 
     // Lista si eres DUEÑO
     val listaCuidadores = listOf(
@@ -37,74 +43,94 @@ fun PantallaFeed(rolUsuario: String = "cuidador") {
 
     // Lista si eres CUIDADOR
     val listaMascotas = listOf(
-        MascotaFeed("Toby", "Gato","Bosque de Noruega", "A 1 km de distancia"),
-        MascotaFeed("Luna", "Perro","Bichón Maltés", "A 2.5 km de distancia"),
-        MascotaFeed("Rocky", "Hámster","Ruso", "A 0.5 km de distancia")
+        MascotaFeed("Toby", "Gato", "Bosque de Noruega", "A 1 km de distancia"),
+        MascotaFeed("Luna", "Perro", "Bichón Maltés", "A 2.5 km de distancia"),
+        MascotaFeed("Rocky", "Hámster", "Ruso", "A 0.5 km de distancia")
     )
-
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(Color(0xFFFFF7EE))
-    ) {
-        // header fijo
+    BackgroundWrapper {
         Column(
             modifier = Modifier
-                .fillMaxWidth()
-                .background(Color(0xFFFDE0C4))
-                .padding(top = 16.dp, start = 16.dp, end = 16.dp, bottom = 12.dp)
+                .fillMaxSize()
         ) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Icon(Icons.Filled.LocationOn, contentDescription = "Ubicación", tint = Color(0xFFB55D3E))
-                Spacer(modifier = Modifier.width(4.dp))
-                Text("Cerca de ti", fontSize = 20.sp, fontWeight = FontWeight.Bold, color = Color(0xFFB55D3E))
-            }
-        }
-
-        // subtítulo que cambia dependiendo del rol
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .background(Color(0xFFFCD0A1).copy(alpha = 0.5f))
-                .padding(horizontal = 16.dp, vertical = 12.dp)
-        ) {
-            val subtitulo = if (rolUsuario == "dueño") "¿Quién cuidará de tu mascota hoy?" else "¿A qué peludo cuidarás hoy?"
-            Text(text = subtitulo, fontSize = 16.sp, fontWeight = FontWeight.Medium, color = Color.DarkGray)
-        }
-
-        // lista con las tarjetas
-        LazyColumn(
-            modifier = Modifier.fillMaxSize().padding(horizontal = 16.dp),
-            contentPadding = PaddingValues(vertical = 16.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
-            if (rolUsuario == "dueño") {
-                items(listaCuidadores) { cuidador ->
-                    TarjetaCuidador(
-                        cuidador = cuidador,
-                        onClick = {
-                            /* TODO: Navegar al perfil de ${cuidador.nombre} */
-                        }
+            // header fijo
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(Color(0xFFFDE0C4))
+                    .padding(top = 16.dp, start = 16.dp, end = 16.dp, bottom = 12.dp)
+            ) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(
+                        Icons.Filled.LocationOn,
+                        contentDescription = "Ubicación",
+                        tint = Color(0xFFB55D3E)
+                    )
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text(
+                        "Cerca de ti",
+                        fontSize = 20.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color(0xFFB55D3E)
                     )
                 }
-            } else {
-                items(listaMascotas) { mascota ->
-                    TarjetaMascota(
-                        mascota = mascota,
-                        onClick = {
-                            /* TODO: Navegar al perfil de ${mascota.nombre} */
-                        }
-                    )
+            }
+
+            // subtítulo que cambia dependiendo del rol
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(Color(0xFFFCD0A1))
+                    .padding(horizontal = 16.dp, vertical = 12.dp)
+            ) {
+                val subtitulo =
+                    if (rolUsuario == "dueño") "¿Quién cuidará de tu mascota hoy?" else "¿A qué peludo cuidarás hoy?"
+                Text(
+                    text = subtitulo,
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Medium,
+                    color = Color.DarkGray
+                )
+            }
+
+            // lista con las tarjetas
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(horizontal = 16.dp),
+                contentPadding = PaddingValues(vertical = 16.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                if (rolUsuario == "dueño") {
+                    items(listaCuidadores) { cuidador ->
+                        TarjetaCuidador(
+                            cuidador = cuidador,
+                            onClick = {
+                                onVerPerfilClick(cuidador.nombre, "cuidador")
+                            }
+                        )
+                    }
+                } else {
+                    items(listaMascotas) { mascota ->
+                        TarjetaMascota(
+                            mascota = mascota,
+                            onClick = {
+                                onVerPerfilClick(mascota.nombre, "dueño")
+                            }
+                        )
+                    }
                 }
             }
         }
     }
 }
 
-// --- 3. DISEÑO DE LAS TARJETAS ---
+// diseño tarjetas
 
 @Composable
-fun TarjetaCuidador(cuidador: Cuidador, onClick: () -> Unit) { // <-- ¡Aquí estaba el error! Cambiado '=' por ':'
+fun TarjetaCuidador(
+    cuidador: Cuidador,
+    onClick: () -> Unit
+) {
     Card(
         onClick = onClick,
         modifier = Modifier.fillMaxWidth(),
@@ -112,24 +138,59 @@ fun TarjetaCuidador(cuidador: Cuidador, onClick: () -> Unit) { // <-- ¡Aquí es
         colors = CardDefaults.cardColors(containerColor = Color.White),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
-        Row(modifier = Modifier.fillMaxWidth().padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
-            Box(modifier = Modifier.size(50.dp).background(Color(0xFFE2F0D9), CircleShape), contentAlignment = Alignment.Center) {
-                Icon(Icons.Filled.Person, contentDescription = null, tint = Color.Gray, modifier = Modifier.size(28.dp))
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(50.dp)
+                    .background(Color(0xFFE2F0D9), CircleShape),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    Icons.Filled.Person,
+                    contentDescription = null,
+                    tint = Color.Gray,
+                    modifier = Modifier.size(28.dp)
+                )
             }
             Spacer(modifier = Modifier.width(16.dp))
             Column(modifier = Modifier.weight(1f)) {
-                Text(text = cuidador.nombre, fontSize = 16.sp, fontWeight = FontWeight.Bold, color = Color.Black)
+                Text(
+                    text = cuidador.nombre,
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.Black
+                )
                 Spacer(modifier = Modifier.height(4.dp))
                 Row(horizontalArrangement = Arrangement.spacedBy(2.dp)) {
                     repeat(cuidador.estrellas) {
-                        Icon(Icons.Filled.Star, contentDescription = null, tint = Color(0xFFFFC107), modifier = Modifier.size(16.dp))
+                        Icon(
+                            Icons.Filled.Star,
+                            contentDescription = null,
+                            tint = Color(0xFFFFC107),
+                            modifier = Modifier.size(16.dp)
+                        )
                     }
                     repeat(5 - cuidador.estrellas) {
-                        Icon(Icons.Filled.Star, contentDescription = null, tint = Color.LightGray, modifier = Modifier.size(16.dp))
+                        Icon(
+                            Icons.Filled.Star,
+                            contentDescription = null,
+                            tint = Color.LightGray,
+                            modifier = Modifier.size(16.dp)
+                        )
                     }
                 }
             }
-            Text(text = cuidador.distancia, fontSize = 12.sp, color = Color.Gray, modifier = Modifier.align(Alignment.Top))
+            Text(
+                text = cuidador.distancia,
+                fontSize = 12.sp,
+                color = Color.Gray,
+                modifier = Modifier.align(Alignment.Top)
+            )
         }
     }
 }
@@ -143,19 +204,44 @@ fun TarjetaMascota(mascota: MascotaFeed, onClick: () -> Unit) {
         colors = CardDefaults.cardColors(containerColor = Color.White),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
-        Row(modifier = Modifier.fillMaxWidth().padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
-            Box(modifier = Modifier.size(50.dp).background(Color(0xFFFDE0C4), CircleShape), contentAlignment = Alignment.Center) {
-                Icon(Icons.Filled.Pets, contentDescription = null, tint = Color(0xFFB55D3E), modifier = Modifier.size(24.dp))
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(50.dp)
+                    .background(Color(0xFFFDE0C4), CircleShape),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    Icons.Filled.Pets,
+                    contentDescription = null,
+                    tint = Color(0xFFB55D3E),
+                    modifier = Modifier.size(24.dp)
+                )
             }
             Spacer(modifier = Modifier.width(16.dp))
             Column(modifier = Modifier.weight(1f)) {
-                Text(text = mascota.nombre, fontSize = 16.sp, fontWeight = FontWeight.Bold, color = Color.Black)
+                Text(
+                    text = mascota.nombre,
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.Black
+                )
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(text = mascota.especie, fontSize = 14.sp, color = Color.DarkGray)
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(text = mascota.raza, fontSize = 12.sp, color = Color.DarkGray)
             }
-            Text(text = mascota.distancia, fontSize = 12.sp, color = Color.Gray, modifier = Modifier.align(Alignment.Top))
+            Text(
+                text = mascota.distancia,
+                fontSize = 12.sp,
+                color = Color.Gray,
+                modifier = Modifier.align(Alignment.Top)
+            )
         }
     }
 }

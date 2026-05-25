@@ -13,7 +13,7 @@ import androidx.navigation.compose.rememberNavController
 import com.marialobo.pawpany.ui.navigation.itemsNavegacion
 
 @Composable
-fun PantallaPrincipal(onChatPrivadoClick: (String) -> Unit, onEditarPerfilClick: () -> Unit) {
+fun PantallaPrincipal(onChatPrivadoClick: (String) -> Unit, onEditarPerfilClick: () -> Unit, onVerPerfilAjenoClick: (String, String) -> Unit) {
     val navController = rememberNavController()
 
     Scaffold(
@@ -54,8 +54,18 @@ fun PantallaPrincipal(onChatPrivadoClick: (String) -> Unit, onEditarPerfilClick:
             startDestination = "feed",
             modifier = Modifier.padding(innerPadding)
         ) {
-            composable("feed") { PantallaFeed() }
-            composable("search") { PantallaBusqueda() }
+            composable("feed") {
+                PantallaFeed(
+                    rolUsuario = "dueño", // O "cuidador"
+                    onVerPerfilClick = { nombre, rol -> onVerPerfilAjenoClick(nombre, rol) }
+                )
+            }
+            composable("search") {
+                PantallaBusqueda(
+                    rolUsuario = "dueño",
+                    onVerPerfilClick = { nombre, rol -> onVerPerfilAjenoClick(nombre, rol) }
+                )
+            }
             composable("chat") {
                 PantallaChat(
                     onChatClick = { nombreContacto ->
@@ -77,4 +87,4 @@ fun PantallaPrincipal(onChatPrivadoClick: (String) -> Unit, onEditarPerfilClick:
 //@Composable fun PantallaFeed() { Text("Pantalla de Inicio") }
 //@Composable fun PantallaBusqueda() { Text("Pantalla de Búsqueda") }
 //@Composable fun PantallaChat() { Text("Pantalla de Chat") }
-@Composable fun PantallaPerfil() { Text("Pantalla de Perfil") }
+//@Composable fun PantallaPerfil() { Text("Pantalla de Perfil") }

@@ -19,6 +19,7 @@ import com.marialobo.pawpany.ui.screens.RegistroMascota
 import android.net.Uri
 import com.marialobo.pawpany.ui.screens.EditarPerfil
 import com.marialobo.pawpany.ui.screens.PantallaMensajePrivado
+import com.marialobo.pawpany.ui.screens.PantallaPerfilAjeno
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -97,6 +98,10 @@ class MainActivity : ComponentActivity() {
                         },
                         onEditarPerfilClick = {
                             navController.navigate("editar_perfil")
+                        },
+                        onVerPerfilAjenoClick = { nombre, rol -> // <-- AÑADIDO ESTO
+                            val nombreSeguro = Uri.encode(nombre)
+                            navController.navigate("perfil_ajeno/$nombreSeguro/$rol")
                         }
                     )
                 }
@@ -114,6 +119,21 @@ class MainActivity : ComponentActivity() {
                     EditarPerfil(
                         rolUsuario = "dueño", // Aquí en el futuro pasaremos el rol real desde la BD
                         onBackClick = { navController.popBackStack() }
+                    )
+                }
+                composable("perfil_ajeno/{nombre}/{rol}") { backStackEntry ->
+                    val nombre = backStackEntry.arguments?.getString("nombre") ?: "Usuario"
+                    val rol = backStackEntry.arguments?.getString("rol") ?: "cuidador"
+
+                    PantallaPerfilAjeno(
+                        nombrePerfil = nombre,
+                        rolPerfil = rol,
+                        onBackClick = { navController.popBackStack() },
+                        onContactarClick = { nombreContacto ->
+                            // si le dan a contactar navega a su chat privado
+                            val nombreSeguro = Uri.encode(nombreContacto)
+                            navController.navigate("chat_privado/$nombreSeguro")
+                        }
                     )
                 }
             }

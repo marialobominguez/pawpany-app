@@ -97,8 +97,6 @@ fun PantallaPerfilAjeno(
                 } else if (tabSeleccionada == 1) {
                     TarjetaInfo(if (rolPerfil == "cuidador") "Tarifas" else "Requisitos", if (rolPerfil == "cuidador") "Paseo: 10€/h\nAlojamiento: 20€/noche" else "Vehículo propio y paciencia.")
                 } else if (tabSeleccionada == 2) {
-                    Text("Reseñas de $nombrePerfil", fontWeight = FontWeight.Bold)
-                    Spacer(modifier = Modifier.height(8.dp))
                     // simulo reseñas
                     val listaResenas = listOf(
                         Resena("Carlos M.", 5, "Un trato espectacular, muy recomendable. Sin duda repetiremos."),

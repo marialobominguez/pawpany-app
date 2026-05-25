@@ -1,13 +1,38 @@
 package com.marialobo.pawpany.model
 
-// lo que envío al servidor
+// --- MOLDES DE LOGIN ---
 data class LoginRequest(
     val email: String,
     val password: String
 )
 
-// lo que el servidor responde
 data class LoginResponse(
     val mensaje: String,
     val token: String
+)
+
+// --- MOLDES DE USUARIO ---
+data class UsuarioCreate(
+    val username: String,
+    val email: String,
+    val password_hash: String,
+    val nombre: String,
+    val apellido1: String = "",
+    val apellido2: String = "",
+    val ubicacion: String,
+    val rol: String
+)
+
+data class UsuarioOut(
+    val id: Int,
+    val email: String
+)
+
+// --- MOLDE DE MASCOTA ---
+data class MascotaCreate(
+    val nombre: String,
+    val especie: String,
+    val raza: String,
+    val personalidad_libre: String,
+    val id_usuario: Int
 )

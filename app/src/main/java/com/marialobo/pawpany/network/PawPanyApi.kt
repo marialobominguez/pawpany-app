@@ -2,15 +2,25 @@ package com.marialobo.pawpany.network
 
 import com.marialobo.pawpany.model.LoginRequest
 import com.marialobo.pawpany.model.LoginResponse
+import com.marialobo.pawpany.model.MascotaCreate
+import com.marialobo.pawpany.model.UsuarioCreate
+import com.marialobo.pawpany.model.UsuarioOut
 import retrofit2.Call
 import retrofit2.http.Body
+import retrofit2.http.Header
 import retrofit2.http.POST
 
 interface PawPanyApi {
 
-    // ruta para iniciar sesión
     @POST("login")
     fun hacerLogin(@Body credenciales: LoginRequest): Call<LoginResponse>
 
-    // Poco a poco iremos añadiendo aquí el resto (obtener usuarios, mascotas, etc.)
+    @POST("usuarios")
+    fun crearUsuario(@Body usuario: UsuarioCreate): Call<UsuarioOut>
+
+    @POST("mascotas")
+    fun crearMascota(
+        @Header("x-token") token: String,
+        @Body mascota: MascotaCreate
+    ): Call<Void>
 }

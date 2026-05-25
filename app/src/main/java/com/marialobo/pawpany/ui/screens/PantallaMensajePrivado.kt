@@ -1,14 +1,13 @@
 package com.marialobo.pawpany.ui.screens
 
+import android.content.Context
+import android.util.Base64
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.AddCircleOutline
@@ -18,10 +17,21 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.marialobo.pawpany.ui.components.BackgroundWrapper
+
+// <-- MODIFICADO: Imports necesarios para Retrofit y modelos
+import com.marialobo.pawpany.network.RetrofitClient
+import com.marialobo.pawpany.model.MensajeCreate
+import org.json.JSONObject
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
+
+import com.marialobo.pawpany.model.MensajeOut
 
 // mensajes posibles
 enum class TipoMensaje { TEXTO, CONTRATO }
@@ -30,7 +40,6 @@ data class Mensaje(
     val texto: String = "",
     val esMio: Boolean,
     val tipo: TipoMensaje = TipoMensaje.TEXTO,
-    // datos opcionales contrato
     val tipoContrato: String = "",
     val ubicacion: String = "",
     val fecha: String = "",
@@ -40,174 +49,100 @@ data class Mensaje(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun PantallaMensajePrivado(nombreContacto: String, onBackClick: () -> Unit) {
+fun PantallaMensajePrivado(
+    idDestinatario: Int,
+    nombreContacto: String,
+    onBackClick: () -> Unit
+) {
+    val context = LocalContext.current
+    val prefs = context.getSharedPreferences("PawPanyPrefs", Context.MODE_PRIVATE)
+    val token = prefs.getString("JWT_TOKEN", "") ?: ""
+
+    // saco el ID del token para el remitente
+    val miId = remember {
+        try {
+            val partes = token.split(".")
+            JSONObject(String(Base64.decode(partes[1], Base64.DEFAULT))).getInt("id")
+        } catch (e: Exception) { -1 }
+    }
+
     var textoEscrito by remember { mutableStateOf("") }
+    val historialMensajes = remember { mutableStateListOf<Mensaje>() }
 
-    var mostrarDialogoContrato by remember { mutableStateOf(false) }
+    //para los mensajes antiguos
+    LaunchedEffect(idDestinatario) {
+        RetrofitClient.apiService.obtenerMensajes(token).enqueue(object : Callback<List<MensajeOut>> {
+            override fun onResponse(call: Call<List<MensajeOut>>, res: Response<List<MensajeOut>>) {
+                if (res.isSuccessful && res.body() != null) {
+                    val todosLosMensajes = res.body()!!
+                    // 1 - filtramos solo la conversación entre el usuario y el contacto
+                    val chatFiltrado = todosLosMensajes.filter {
+                        (it.id_remitente == miId && it.id_destinatario == idDestinatario) ||
+                                (it.id_remitente == idDestinatario && it.id_destinatario == miId)
+                    }
 
-    // simulo conver
-    val historialMensajes = remember {
-        mutableStateListOf(
-            Mensaje("Holaaaa!!!! ¿Podrías cuidar de mi michi?", esMio = true),
-            Mensaje("Hola! Estaría encantado de hacerlo.", esMio = false)
-        )
+                    // 2 - transformamos los datos de la bbdd al template visual de las burbujas
+                    val burbujas = chatFiltrado.map { msjBD ->
+                        Mensaje(
+                            texto = msjBD.contenido,
+                            esMio = (msjBD.id_remitente == miId),
+                            tipo = TipoMensaje.TEXTO
+                        )
+                    }
+                    // 3 - metemos las burbujas en la lista para que aparezcan en pantalla
+                    historialMensajes.clear()
+                    historialMensajes.addAll(burbujas)
+                }
+            }
+
+            override fun onFailure(call: Call<List<MensajeOut>>, t: Throwable) {
+                // si falla la red, no hago nada de momento
+            }
+        })
     }
 
     BackgroundWrapper {
         Column(modifier = Modifier.fillMaxSize()) {
-
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .background(Color(0xFFFDE0C4))
-            ) {
+            Column(modifier = Modifier.fillMaxWidth().background(Color(0xFFFDE0C4))) {
                 Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(top = 8.dp, start = 8.dp)) {
-                    IconButton(onClick = onBackClick) { Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Atrás", tint = Color(0xFFB55D3E)) }
-                    Text("Chat", fontSize = 20.sp, fontWeight = FontWeight.Bold, color = Color(0xFFB55D3E))
+                    IconButton(onClick = onBackClick) { Icon(Icons.AutoMirrored.Filled.ArrowBack, "Atrás", tint = Color(0xFFB55D3E)) }
+                    Text("Chat con $nombreContacto", fontSize = 20.sp, fontWeight = FontWeight.Bold, color = Color(0xFFB55D3E))
                 }
-
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp)
-                ) {
-                    Box(modifier = Modifier.size(40.dp).background(Color(0xFFE2F0D9), CircleShape), contentAlignment = Alignment.Center) {
-                        Icon(Icons.Filled.Person, contentDescription = null, tint = Color.Gray, modifier = Modifier.size(24.dp))
-                    }
-                    Spacer(modifier = Modifier.width(12.dp))
-                    Text(text = nombreContacto, fontSize = 18.sp, fontWeight = FontWeight.Medium, color = Color.Black)
-                }
-                HorizontalDivider(color = Color(0xFFB55D3E).copy(alpha = 0.3f), thickness = 1.dp)
             }
 
-            // columna con mensajes
-            LazyColumn(
-                modifier = Modifier
-                    .weight(1f)
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp),
-                contentPadding = PaddingValues(vertical = 16.dp),
-                verticalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                items(historialMensajes) { msj ->
-                    if (msj.tipo == TipoMensaje.TEXTO) {
-                        BocadilloTexto(msj)
-                    } else {
-                        TarjetaContratoChat(msj)
-                    }
-                }
+            LazyColumn(modifier = Modifier.weight(1f).fillMaxWidth().padding(horizontal = 16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                items(historialMensajes) { msj -> BocadilloTexto(msj) }
             }
 
             // barra escribir
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .background(Color.White)
-                    .imePadding() // Sube con el teclado
-                    .padding(horizontal = 16.dp, vertical = 12.dp)
-                    .navigationBarsPadding(),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                // botón adjuntar contrato
-                IconButton(onClick = { mostrarDialogoContrato = true }) {
-                    Icon(Icons.Filled.AddCircleOutline, contentDescription = "Crear contrato", tint = Color(0xFFB55D3E), modifier = Modifier.size(28.dp))
-                }
-
-                Spacer(modifier = Modifier.width(8.dp))
-
+            Row(modifier = Modifier.fillMaxWidth().background(Color.White).imePadding().padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
                 OutlinedTextField(
                     value = textoEscrito,
                     onValueChange = { textoEscrito = it },
-                    placeholder = { Text("Escribe un mensaje...", color = Color.Gray) },
                     modifier = Modifier.weight(1f),
-                    shape = RoundedCornerShape(20.dp),
-                    colors = TextFieldDefaults.colors(
-                        focusedContainerColor = Color(0xFFF5F5F5),
-                        unfocusedContainerColor = Color(0xFFF5F5F5),
-                        focusedIndicatorColor = Color.Transparent,
-                        unfocusedIndicatorColor = Color.Transparent
-                    )
+                    placeholder = { Text("Escribe un mensaje...") }
                 )
-            }
-        }
-    }
-    // contrato
-    if (mostrarDialogoContrato) {
-        DialogoCrearContrato(
-            onDismiss = { mostrarDialogoContrato = false },
-            onEnviar = { contrato ->
-                historialMensajes.add(contrato) // Añadimos el contrato al chat
-                mostrarDialogoContrato = false // Cerramos el popup
-            }
-        )
-    }
-}
 
-// bocaadillo mensaje
-@Composable
-fun BocadilloTexto(mensaje: Mensaje) {
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = if (mensaje.esMio) Arrangement.End else Arrangement.Start
-    ) {
-        Box(
-            modifier = Modifier
-                .widthIn(max = 280.dp)
-                .background(
-                    color = if (mensaje.esMio) Color(0xFFFCD0A1) else Color.White,
-                    shape = RoundedCornerShape(
-                        topStart = 16.dp,
-                        topEnd = 16.dp,
-                        bottomStart = if (mensaje.esMio) 16.dp else 4.dp,
-                        bottomEnd = if (mensaje.esMio) 4.dp else 16.dp
-                    )
-                )
-                .padding(16.dp)
-        ) {
-            Text(text = mensaje.texto, fontSize = 15.sp, color = Color.Black)
-        }
-    }
-}
+                // enviar
+                TextButton(
+                    onClick = {
+                        if (textoEscrito.isNotBlank()) {
+                            val nuevoMensaje = MensajeCreate(miId, idDestinatario, textoEscrito)
 
-// tarjeta de contrato
-@Composable
-fun TarjetaContratoChat(mensaje: Mensaje) {
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = if (mensaje.esMio) Arrangement.End else Arrangement.Start
-    ) {
-        Card(
-            modifier = Modifier.width(280.dp).padding(vertical = 8.dp),
-            shape = RoundedCornerShape(16.dp),
-            colors = CardDefaults.cardColors(containerColor = Color.White),
-            elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
-        ) {
-            Column(modifier = Modifier.padding(20.dp)) {
-                Text("Solicitud de Contrato", fontWeight = FontWeight.Bold, fontSize = 18.sp, color = Color.Black)
-                Spacer(modifier = Modifier.height(16.dp))
-
-                FilaDatoContrato("Tipo:", mensaje.tipoContrato)
-                FilaDatoContrato("Ubicación:", mensaje.ubicacion)
-                FilaDatoContrato("Fecha:", mensaje.fecha)
-                FilaDatoContrato("Duración:", mensaje.duracion)
-                FilaDatoContrato("Salario:", mensaje.salario)
-
-                Spacer(modifier = Modifier.height(20.dp))
-
-                // botones de acción
-                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                    OutlinedButton(
-                        onClick = { /* TODO: rechazar contrato */ },
-                        modifier = Modifier.weight(1f),
-                        shape = RoundedCornerShape(8.dp),
-                        border = androidx.compose.foundation.BorderStroke(1.dp, Color.Black)
-                    ) { Text("Rechazar", color = Color.Black) }
-
-                    Button(
-                        onClick = { /* TODO: aceptar contrato */ },
-                        modifier = Modifier.weight(1f),
-                        shape = RoundedCornerShape(8.dp),
-                        colors = ButtonDefaults.buttonColors(containerColor = Color.Black)
-                    ) { Text("Aceptar", color = Color.White) }
+                            // POST
+                            RetrofitClient.apiService.enviarMensaje(token, nuevoMensaje).enqueue(object : Callback<Void> {
+                                override fun onResponse(call: Call<Void>, res: Response<Void>) {
+                                    if (res.isSuccessful) {
+                                        historialMensajes.add(Mensaje(textoEscrito, true))
+                                        textoEscrito = ""
+                                    }
+                                }
+                                override fun onFailure(call: Call<Void>, t: Throwable) { /* manejo de error */ }
+                            })
+                        }
+                    }
+                ) {
+                    Text("Enviar", color = Color(0xFFB55D3E), fontWeight = FontWeight.Bold)
                 }
             }
         }
@@ -215,60 +150,10 @@ fun TarjetaContratoChat(mensaje: Mensaje) {
 }
 
 @Composable
-fun FilaDatoContrato(titulo: String, valor: String) {
-    Column(modifier = Modifier.padding(bottom = 8.dp)) {
-        Text(titulo, fontWeight = FontWeight.Bold, fontSize = 14.sp, color = Color.Black)
-        Text(valor, fontSize = 14.sp, color = Color.DarkGray)
+fun BocadilloTexto(mensaje: Mensaje) {
+    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = if (mensaje.esMio) Arrangement.End else Arrangement.Start) {
+        Box(modifier = Modifier.widthIn(max = 280.dp).background(if (mensaje.esMio) Color(0xFFFCD0A1) else Color.White, RoundedCornerShape(16.dp)).padding(16.dp)) {
+            Text(text = mensaje.texto, fontSize = 15.sp, color = Color.Black)
+        }
     }
-}
-
-// formulario que pide los contratos
-@Composable
-fun DialogoCrearContrato(
-    onDismiss: () -> Unit,
-    onEnviar: (Mensaje) -> Unit
-) {
-    var tipo by remember { mutableStateOf("") }
-    var ubicacion by remember { mutableStateOf("") }
-    var fecha by remember { mutableStateOf("") }
-    var duracion by remember { mutableStateOf("") }
-    var salario by remember { mutableStateOf("") }
-
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        confirmButton = {
-            Button(
-                onClick = {
-                    val nuevoContrato = Mensaje(
-                        esMio = true,
-                        tipo = TipoMensaje.CONTRATO,
-                        tipoContrato = tipo,
-                        ubicacion = ubicacion,
-                        fecha = fecha,
-                        duracion = duracion,
-                        salario = salario
-                    )
-                    onEnviar(nuevoContrato)
-                },
-                colors = ButtonDefaults.buttonColors(containerColor = Color.Black),
-                shape = RoundedCornerShape(8.dp)
-            ) { Text("Enviar Contrato") }
-        },
-        dismissButton = {
-            TextButton(onClick = onDismiss) { Text("Cancelar", color = Color.Gray) }
-        },
-        title = { Text("Nueva Solicitud", fontWeight = FontWeight.Bold) },
-        text = {
-            Column(modifier = Modifier.verticalScroll(rememberScrollState()),
-                verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                OutlinedTextField(value = tipo, onValueChange = { tipo = it }, label = { Text("Tipo (Ej: Tiempo completo)") })
-                OutlinedTextField(value = ubicacion, onValueChange = { ubicacion = it }, label = { Text("Ubicación") })
-                OutlinedTextField(value = fecha, onValueChange = { fecha = it }, label = { Text("Fecha (AAAA-MM-DD)") })
-                OutlinedTextField(value = duracion, onValueChange = { duracion = it }, label = { Text("Duración") })
-                OutlinedTextField(value = salario, onValueChange = { salario = it }, label = { Text("Salario (Ej: 1200€)") })
-            }
-        },
-        containerColor = Color.White,
-        shape = RoundedCornerShape(16.dp)
-    )
 }

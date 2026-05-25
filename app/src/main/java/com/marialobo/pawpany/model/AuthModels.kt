@@ -74,3 +74,10 @@ data class MensajeOut(
     val contenido: String,
     val fecha_envio: String
 )
+
+data class MensajeCreate(
+    val id_remitente: Int,
+    val id_destinatario: Int,
+    val contenido: String
+)
+

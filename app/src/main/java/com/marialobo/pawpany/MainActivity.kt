@@ -17,6 +17,8 @@ import com.marialobo.pawpany.ui.screens.RegistroCuidador
 import com.marialobo.pawpany.ui.screens.RegistroEligeRol
 import com.marialobo.pawpany.ui.screens.RegistroMascota
 import android.net.Uri
+import androidx.navigation.NavType
+import androidx.navigation.navArgument
 import com.marialobo.pawpany.ui.screens.EditarPerfil
 import com.marialobo.pawpany.ui.screens.PantallaMensajePrivado
 import com.marialobo.pawpany.ui.screens.PantallaPerfilAjeno
@@ -91,10 +93,10 @@ class MainActivity : ComponentActivity() {
 
                 composable("main") {
                     PantallaPrincipal(
-                        onChatPrivadoClick = { nombre ->
-                            // transformo el nombre a formato seguro antes de viajar
+                        onChatPrivadoClick = { id, nombre ->
                             val nombreSeguro = Uri.encode(nombre)
-                            navController.navigate("chat_privado/$nombreSeguro")
+                            // Fíjate bien en la ruta: /id/nombre
+                            navController.navigate("chat_privado/$id/$nombreSeguro")
                         },
                         onEditarPerfilClick = {
                             navController.navigate("editar_perfil")
@@ -106,11 +108,18 @@ class MainActivity : ComponentActivity() {
                     )
                 }
 
-                composable("chat_privado/{nombreContacto}") { backStackEntry ->
-                    // Sacamos el nombre de la URL
+                composable(
+                    "chat_privado/{idDestinatario}/{nombreContacto}",
+                    arguments = listOf(
+                        navArgument("idDestinatario") { type = NavType.IntType },
+                        navArgument("nombreContacto") { type = NavType.StringType }
+                    )
+                ) { backStackEntry ->
+                    val id = backStackEntry.arguments?.getInt("idDestinatario") ?: 0
                     val nombre = backStackEntry.arguments?.getString("nombreContacto") ?: "Usuario"
 
                     PantallaMensajePrivado(
+                        idDestinatario = id,
                         nombreContacto = nombre,
                         onBackClick = { navController.popBackStack() }
                     )

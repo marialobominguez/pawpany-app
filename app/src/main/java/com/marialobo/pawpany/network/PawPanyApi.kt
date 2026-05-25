@@ -4,6 +4,7 @@ import com.marialobo.pawpany.model.LoginRequest
 import com.marialobo.pawpany.model.LoginResponse
 import com.marialobo.pawpany.model.MascotaCreate
 import com.marialobo.pawpany.model.MascotaOut
+import com.marialobo.pawpany.model.MensajeCreate
 import com.marialobo.pawpany.model.MensajeOut
 import com.marialobo.pawpany.model.PerfilCuidadorCreate
 import com.marialobo.pawpany.model.PerfilCuidadorOut
@@ -46,4 +47,10 @@ interface PawPanyApi {
 
     @GET("mensajes")
     fun obtenerMensajes(@Header("x-token") token: String): Call<List<MensajeOut>>
+
+    @POST("mensajes")
+    fun enviarMensaje(
+        @Header("x-token") token: String,
+        @Body mensaje: MensajeCreate
+    ): Call<Void>
 }

@@ -31,7 +31,7 @@ import retrofit2.Response
 data class ChatItem(val idUsuario: Int, val nombre: String)
 
 @Composable
-fun PantallaChat(onChatClick: (String) -> Unit) {
+fun PantallaChat(onChatClick: (Int, String) -> Unit) {
     val context = LocalContext.current
     var listaChats by remember { mutableStateOf<List<ChatItem>>(emptyList()) }
     var isLoading by remember { mutableStateOf(true) }
@@ -83,7 +83,7 @@ fun PantallaChat(onChatClick: (String) -> Unit) {
             } else {
                 LazyColumn(modifier = Modifier.fillMaxSize(), contentPadding = PaddingValues(top = 8.dp)) {
                     items(listaChats) { chat ->
-                        FilaChat(chat) { onChatClick(chat.nombre) }
+                        FilaChat(chat) { onChatClick(chat.idUsuario, chat.nombre) }
                         HorizontalDivider(color = Color.LightGray.copy(alpha = 0.5f), thickness = 1.dp)
                     }
                 }

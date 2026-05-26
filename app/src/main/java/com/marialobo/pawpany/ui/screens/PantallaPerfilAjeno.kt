@@ -23,12 +23,12 @@ import com.marialobo.pawpany.ui.components.BackgroundWrapper
 
 @Composable
 fun PantallaPerfilAjeno(
+    idUsuario: Int,
     nombrePerfil: String,
-    rolPerfil: String, // Recibe "cuidador" o "dueño"
+    rolPerfil: String,
     onBackClick: () -> Unit,
-    onContactarClick: (String) -> Unit
+    onContactarClick: (Int, String) -> Unit
 ) {
-    // números para las pantallas del menú
     var tabSeleccionada by remember { mutableStateOf(0) }
 
     BackgroundWrapper {
@@ -74,7 +74,6 @@ fun PantallaPerfilAjeno(
 
                 Spacer(modifier = Modifier.height(12.dp))
 
-                // Fila 3: Tabs
                 Row(modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     BotonTabAjeno("Sobre mí", tabSeleccionada == 0) { tabSeleccionada = 0 }
                     BotonTabAjeno(if (rolPerfil == "cuidador") "Servicios" else "Requisitos", tabSeleccionada == 1) { tabSeleccionada = 1 }
@@ -98,7 +97,6 @@ fun PantallaPerfilAjeno(
                 } else if (tabSeleccionada == 1) {
                     TarjetaInfo(if (rolPerfil == "cuidador") "Tarifas" else "Requisitos", if (rolPerfil == "cuidador") "Paseo: 10€/h\nAlojamiento: 20€/noche" else "Vehículo propio y paciencia.")
                 } else if (tabSeleccionada == 2) {
-                    // simulo reseñas
                     val listaResenas = listOf(
                         Resena("Carlos M.", 5, "Un trato espectacular, muy recomendable. Sin duda repetiremos."),
                         Resena("Laura G.", 4, "Todo muy bien, mucha comunicación en todo momento.")
@@ -118,7 +116,7 @@ fun PantallaPerfilAjeno(
                     .navigationBarsPadding()
             ) {
                 Button(
-                    onClick = { onContactarClick(nombrePerfil) },
+                    onClick = { onContactarClick(idUsuario, nombrePerfil) },
                     modifier = Modifier.fillMaxWidth().height(50.dp),
                     shape = RoundedCornerShape(12.dp),
                     colors = ButtonDefaults.buttonColors(containerColor = Color.Black)
@@ -166,9 +164,7 @@ fun TarjetaResena(resena: Resena) {
             ) {
                 Icon(Icons.Default.Person, contentDescription = null, tint = Color.White, modifier = Modifier.size(20.dp))
             }
-
             Spacer(modifier = Modifier.width(12.dp))
-
             Column(modifier = Modifier.weight(1f)) {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -176,7 +172,6 @@ fun TarjetaResena(resena: Resena) {
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(text = resena.autor, fontWeight = FontWeight.Bold, fontSize = 15.sp, color = Color.Black)
-
                     Row(horizontalArrangement = Arrangement.spacedBy(1.dp)) {
                         repeat(resena.estrellas) {
                             Icon(Icons.Filled.Star, contentDescription = null, tint = Color(0xFFFFC107), modifier = Modifier.size(14.dp))
@@ -186,7 +181,6 @@ fun TarjetaResena(resena: Resena) {
                         }
                     }
                 }
-
                 Spacer(modifier = Modifier.height(6.dp))
                 Text(text = resena.comentario, color = Color.DarkGray, fontSize = 14.sp)
             }

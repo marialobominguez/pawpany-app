@@ -13,7 +13,7 @@ import androidx.navigation.compose.rememberNavController
 import com.marialobo.pawpany.ui.navigation.itemsNavegacion
 
 @Composable
-fun PantallaPrincipal(onChatPrivadoClick: (Int, String) -> Unit, onEditarPerfilClick: () -> Unit, onVerPerfilAjenoClick: (String, String) -> Unit) {
+fun PantallaPrincipal(onChatPrivadoClick: (Int, String) -> Unit, onEditarPerfilClick: () -> Unit, onVerPerfilAjenoClick: (Int, String, String) -> Unit) {
     val navController = rememberNavController()
 
     Scaffold(
@@ -56,19 +56,19 @@ fun PantallaPrincipal(onChatPrivadoClick: (Int, String) -> Unit, onEditarPerfilC
         ) {
             composable("feed") {
                 PantallaFeed(
-                    rolUsuario = "dueño", // O "cuidador"
-                    onVerPerfilClick = { nombre, rol -> onVerPerfilAjenoClick(nombre, rol) }
+                    rolUsuario = "dueño",
+                    onVerPerfilClick = { id, nombre, rol -> onVerPerfilAjenoClick(id, nombre, rol) }
                 )
             }
             composable("search") {
                 PantallaBusqueda(
                     rolUsuario = "dueño",
-                    onVerPerfilClick = { nombre, rol -> onVerPerfilAjenoClick(nombre, rol) }
+                    onVerPerfilClick = { id, nombre, rol -> onVerPerfilAjenoClick(id, nombre, rol) }
                 )
             }
             composable("chat") {
                 PantallaChat(
-                    onChatClick = { id, nombre -> // <-- Recoge los dos
+                    onChatClick = { id, nombre ->
                         onChatPrivadoClick(id, nombre)
                     }
                 )

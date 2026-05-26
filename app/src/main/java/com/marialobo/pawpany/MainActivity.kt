@@ -101,9 +101,9 @@ class MainActivity : ComponentActivity() {
                         onEditarPerfilClick = {
                             navController.navigate("editar_perfil")
                         },
-                        onVerPerfilAjenoClick = { nombre, rol -> // <-- AÑADIDO ESTO
+                        onVerPerfilAjenoClick = { id, nombre, rol ->
                             val nombreSeguro = Uri.encode(nombre)
-                            navController.navigate("perfil_ajeno/$nombreSeguro/$rol")
+                            navController.navigate("perfil_ajeno/$id/$nombreSeguro/$rol")
                         }
                     )
                 }
@@ -130,18 +130,26 @@ class MainActivity : ComponentActivity() {
                         onBackClick = { navController.popBackStack() }
                     )
                 }
-                composable("perfil_ajeno/{nombre}/{rol}") { backStackEntry ->
+                composable(
+                    "perfil_ajeno/{id}/{nombre}/{rol}",
+                    arguments = listOf(
+                        navArgument("id") { type = NavType.IntType },
+                        navArgument("nombre") { type = NavType.StringType },
+                        navArgument("rol") { type = NavType.StringType }
+                    )
+                ) { backStackEntry ->
+                    val id = backStackEntry.arguments?.getInt("id") ?: 0
                     val nombre = backStackEntry.arguments?.getString("nombre") ?: "Usuario"
                     val rol = backStackEntry.arguments?.getString("rol") ?: "cuidador"
 
                     PantallaPerfilAjeno(
+                        idUsuario = id,
                         nombrePerfil = nombre,
                         rolPerfil = rol,
                         onBackClick = { navController.popBackStack() },
-                        onContactarClick = { nombreContacto ->
-                            // si le dan a contactar navega a su chat privado
+                        onContactarClick = { idContacto, nombreContacto ->
                             val nombreSeguro = Uri.encode(nombreContacto)
-                            navController.navigate("chat_privado/$nombreSeguro")
+                            navController.navigate("chat_privado/$idContacto/$nombreSeguro")
                         }
                     )
                 }

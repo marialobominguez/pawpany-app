@@ -33,15 +33,14 @@ import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 
-data class ResultadoBusqueda(val nombre: String, val ubicacion: String, val etiquetaSecundaria: String)
+data class ResultadoBusqueda(val idUsuario: Int, val nombre: String, val ubicacion: String, val etiquetaSecundaria: String)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun PantallaBusqueda(rolUsuario: String = "dueño", onVerPerfilClick: (String, String) -> Unit) {
+fun PantallaBusqueda(rolUsuario: String = "dueño", onVerPerfilClick: (Int, String, String) -> Unit) { // <-- Pide (Int, String, String)
     var textoBusqueda by remember { mutableStateOf("") }
     val context = LocalContext.current
 
-    // Estados para la carga desde AWS
     var todosLosDatos by remember { mutableStateOf<List<ResultadoBusqueda>>(emptyList()) }
     var isLoading by remember { mutableStateOf(true) }
 
@@ -54,7 +53,6 @@ fun PantallaBusqueda(rolUsuario: String = "dueño", onVerPerfilClick: (String, S
         } catch (e: Exception) { -1 }
     }
 
-    // Carga inicial
     LaunchedEffect(rolUsuario) {
         RetrofitClient.apiService.obtenerUsuarios().enqueue(object : Callback<List<UsuarioOut>> {
             override fun onResponse(call: Call<List<UsuarioOut>>, resU: Response<List<UsuarioOut>>) {
@@ -65,7 +63,7 @@ fun PantallaBusqueda(rolUsuario: String = "dueño", onVerPerfilClick: (String, S
                             val cuidadores = resC.body() ?: emptyList()
                             todosLosDatos = cuidadores.filter { it.id_usuario != miId }.mapNotNull { perfil ->
                                 val user = usuarios.find { it.id == perfil.id_usuario }
-                                user?.let { ResultadoBusqueda(it.nombre, it.ubicacion?: "Ubicación desconocida", "Cuidador") }
+                                user?.let { ResultadoBusqueda(it.id, it.nombre, it.ubicacion ?: "Ubicación desconocida", "Cuidador") }
                             }
                             isLoading = false
                         }
@@ -76,7 +74,9 @@ fun PantallaBusqueda(rolUsuario: String = "dueño", onVerPerfilClick: (String, S
                         override fun onResponse(call: Call<List<MascotaOut>>, resM: Response<List<MascotaOut>>) {
                             todosLosDatos = (resM.body() ?: emptyList())
                                 .filter { it.id_usuario != miId }
-                                .map { ResultadoBusqueda(it.nombre, "Ubicación genérica", it.especie ?: "Mascota") }
+                                .map {
+                                    ResultadoBusqueda(it.id_usuario, it.nombre, "Ubicación genérica", it.especie ?: "Mascota")
+                                }
                             isLoading = false
                         }
                         override fun onFailure(call: Call<List<MascotaOut>>, t: Throwable) { isLoading = false }
@@ -87,7 +87,6 @@ fun PantallaBusqueda(rolUsuario: String = "dueño", onVerPerfilClick: (String, S
         })
     }
 
-    // Búsqueda en tiempo real
     val resultadosFiltrados by remember(textoBusqueda, todosLosDatos) {
         derivedStateOf {
             if (textoBusqueda.isEmpty()) todosLosDatos
@@ -106,7 +105,7 @@ fun PantallaBusqueda(rolUsuario: String = "dueño", onVerPerfilClick: (String, S
                     value = textoBusqueda,
                     onValueChange = { textoBusqueda = it },
                     placeholder = { Text("Escribe la ubicación o nombre...", color = Color.Gray) },
-                    leadingIcon = { Icon(Icons.Filled.Search, contentDescription = null, tint = Color.Gray) },
+                    leadingIcon = { Icon(Icons.Filled.Search, null, tint = Color.Gray) },
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(12.dp),
                     colors = TextFieldDefaults.colors(focusedContainerColor = Color.White, unfocusedContainerColor = Color.White)
@@ -119,7 +118,7 @@ fun PantallaBusqueda(rolUsuario: String = "dueño", onVerPerfilClick: (String, S
                 LazyColumn(modifier = Modifier.fillMaxSize()) {
                     items(resultadosFiltrados) { resultado ->
                         FilaResultado(resultado, rolUsuario) {
-                            onVerPerfilClick(resultado.nombre, if (rolUsuario == "dueño") "cuidador" else "dueño")
+                            onVerPerfilClick(resultado.idUsuario, resultado.nombre, if (rolUsuario == "dueño") "cuidador" else "dueño")
                         }
                         HorizontalDivider(color = Color.LightGray.copy(alpha = 0.5f), thickness = 1.dp)
                     }

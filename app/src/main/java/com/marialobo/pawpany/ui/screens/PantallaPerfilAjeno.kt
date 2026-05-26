@@ -10,6 +10,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Pets
+import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -143,5 +144,52 @@ fun RowScope.BotonTabAjeno(texto: String, seleccionado: Boolean, onClick: () -> 
         elevation = ButtonDefaults.buttonElevation(defaultElevation = 2.dp)
     ) {
         Text(texto, fontSize = 11.sp, fontWeight = FontWeight.Bold)
+    }
+}
+
+data class Resena(val autor: String, val estrellas: Int, val comentario: String)
+
+@Composable
+fun TarjetaResena(resena: Resena) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(containerColor = Color.White),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth().padding(16.dp),
+            verticalAlignment = Alignment.Top
+        ) {
+            Box(
+                modifier = Modifier.size(36.dp).background(Color.LightGray, CircleShape),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(Icons.Default.Person, contentDescription = null, tint = Color.White, modifier = Modifier.size(20.dp))
+            }
+
+            Spacer(modifier = Modifier.width(12.dp))
+
+            Column(modifier = Modifier.weight(1f)) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(text = resena.autor, fontWeight = FontWeight.Bold, fontSize = 15.sp, color = Color.Black)
+
+                    Row(horizontalArrangement = Arrangement.spacedBy(1.dp)) {
+                        repeat(resena.estrellas) {
+                            Icon(Icons.Filled.Star, contentDescription = null, tint = Color(0xFFFFC107), modifier = Modifier.size(14.dp))
+                        }
+                        repeat(5 - resena.estrellas) {
+                            Icon(Icons.Filled.Star, contentDescription = null, tint = Color.LightGray, modifier = Modifier.size(14.dp))
+                        }
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(6.dp))
+                Text(text = resena.comentario, color = Color.DarkGray, fontSize = 14.sp)
+            }
+        }
     }
 }

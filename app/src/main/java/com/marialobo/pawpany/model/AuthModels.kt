@@ -1,6 +1,5 @@
 package com.marialobo.pawpany.model
 
-// --- MOLDES DE LOGIN ---
 data class LoginRequest(
     val email: String,
     val password: String
@@ -11,7 +10,6 @@ data class LoginResponse(
     val token: String
 )
 
-// --- MOLDES DE USUARIO ---
 data class UsuarioCreate(
     val username: String,
     val email: String,
@@ -23,8 +21,6 @@ data class UsuarioCreate(
     val rol: String
 )
 
-
-// --- MOLDE DE MASCOTA ---
 data class MascotaCreate(
     val nombre: String,
     val especie: String,
@@ -33,16 +29,13 @@ data class MascotaCreate(
     val id_usuario: Int
 )
 
-// --- MOLDE DE PERFIL CUIDADOR ---
 data class PerfilCuidadorCreate(
     val estudios: String,
     val sobre_mi: String,
-    val tarifa: Double, // Double porque en tu base de datos es un DECIMAL
+    val tarifa: Double,
     val id_usuario: Int
 )
 
-
-// Modifica el que ya tenías para que también recoja el nombre y el rol
 data class UsuarioOut(
     val id: Int,
     val email: String,
@@ -51,12 +44,13 @@ data class UsuarioOut(
     val ubicacion: String? = "Ubicación desconocida"
 )
 
-// Añade estos dos nuevos para leer el Feed
+// leer el Feed
 data class MascotaOut(
     val id: Int,
     val nombre: String,
-    val especie: String?, // Pueden ser nulos en tu BD
+    val especie: String?,
     val raza: String?,
+    val personalidad_libre: String?,
     val id_usuario: Int
 )
 
@@ -79,5 +73,22 @@ data class MensajeCreate(
     val id_remitente: Int,
     val id_destinatario: Int,
     val contenido: String
+)
+
+// actualizar perfil
+data class UsuarioUpdate(
+    val nombre: String,
+    val ubicacion: String
+)
+
+data class MascotaUpdate(
+    val especie: String,
+    val raza: String,
+    val personalidad_libre: String
+)
+
+data class PerfilCuidadorUpdate(
+    val tarifa: Double,
+    val sobre_mi: String
 )
 

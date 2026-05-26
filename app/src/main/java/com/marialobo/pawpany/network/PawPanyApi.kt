@@ -4,17 +4,22 @@ import com.marialobo.pawpany.model.LoginRequest
 import com.marialobo.pawpany.model.LoginResponse
 import com.marialobo.pawpany.model.MascotaCreate
 import com.marialobo.pawpany.model.MascotaOut
+import com.marialobo.pawpany.model.MascotaUpdate
 import com.marialobo.pawpany.model.MensajeCreate
 import com.marialobo.pawpany.model.MensajeOut
 import com.marialobo.pawpany.model.PerfilCuidadorCreate
 import com.marialobo.pawpany.model.PerfilCuidadorOut
+import com.marialobo.pawpany.model.PerfilCuidadorUpdate
 import com.marialobo.pawpany.model.UsuarioCreate
 import com.marialobo.pawpany.model.UsuarioOut
+import com.marialobo.pawpany.model.UsuarioUpdate
 import retrofit2.Call
 import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.Header
 import retrofit2.http.POST
+import retrofit2.http.PUT
+import retrofit2.http.Path
 
 interface PawPanyApi {
 
@@ -52,5 +57,26 @@ interface PawPanyApi {
     fun enviarMensaje(
         @Header("x-token") token: String,
         @Body mensaje: MensajeCreate
+    ): Call<Void>
+
+    @PUT("usuarios/{id}")
+    fun actualizarUsuario(
+        @Header("x-token") token: String,
+        @Path("id") id: Int,
+        @Body usuario: UsuarioUpdate
+    ): Call<Void>
+
+    @PUT("mascotas/{id}") //
+    fun actualizarMascota(
+        @Header("x-token") token: String,
+        @Path("id") idMascota: Int,
+        @Body mascota: MascotaUpdate
+    ): Call<Void>
+
+    @PUT("perfiles-cuidadores/{id}")
+    fun actualizarCuidador(
+        @Header("x-token") token: String,
+        @Path("id") idCuidador: Int,
+        @Body cuidador: PerfilCuidadorUpdate
     ): Call<Void>
 }

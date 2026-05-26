@@ -21,6 +21,14 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.marialobo.pawpany.ui.components.BackgroundWrapper
 
+import com.marialobo.pawpany.network.RetrofitClient
+import com.marialobo.pawpany.model.MascotaOut
+import com.marialobo.pawpany.model.PerfilCuidadorOut
+import com.marialobo.pawpany.model.UsuarioOut
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
+
 @Composable
 fun PantallaPerfilAjeno(
     idUsuario: Int,
@@ -31,102 +39,159 @@ fun PantallaPerfilAjeno(
 ) {
     var tabSeleccionada by remember { mutableStateOf(0) }
 
+    var usuarioBD by remember { mutableStateOf<UsuarioOut?>(null) }
+    var mascotaBD by remember { mutableStateOf<MascotaOut?>(null) }
+    var cuidadorBD by remember { mutableStateOf<PerfilCuidadorOut?>(null) }
+    var isLoading by remember { mutableStateOf(true) }
+
+    LaunchedEffect(idUsuario) {
+        RetrofitClient.apiService.obtenerUsuarios().enqueue(object : Callback<List<UsuarioOut>> {
+            override fun onResponse(call: Call<List<UsuarioOut>>, resU: Response<List<UsuarioOut>>) {
+                usuarioBD = resU.body()?.find { it.id == idUsuario }
+
+                if (rolPerfil == "dueño") {
+                    RetrofitClient.apiService.obtenerMascotas().enqueue(object : Callback<List<MascotaOut>> {
+                        override fun onResponse(c: Call<List<MascotaOut>>, resM: Response<List<MascotaOut>>) {
+                            mascotaBD = resM.body()?.find { it.id_usuario == idUsuario }
+                            isLoading = false
+                        }
+                        override fun onFailure(c: Call<List<MascotaOut>>, t: Throwable) { isLoading = false }
+                    })
+                } else {
+                    RetrofitClient.apiService.obtenerCuidadores().enqueue(object : Callback<List<PerfilCuidadorOut>> {
+                        override fun onResponse(c: Call<List<PerfilCuidadorOut>>, resC: Response<List<PerfilCuidadorOut>>) {
+                            cuidadorBD = resC.body()?.find { it.id_usuario == idUsuario }
+                            isLoading = false
+                        }
+                        override fun onFailure(c: Call<List<PerfilCuidadorOut>>, t: Throwable) { isLoading = false }
+                    })
+                }
+            }
+            override fun onFailure(call: Call<List<UsuarioOut>>, t: Throwable) { isLoading = false }
+        })
+    }
+
     BackgroundWrapper {
-        Column(modifier = Modifier.fillMaxSize()) {
-            // header fijo
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .background(Color(0xFFFDE0C4))
-            ) {
-                Row(
-                    modifier = Modifier.fillMaxWidth().padding(top = 12.dp, start = 8.dp),
-                    verticalAlignment = Alignment.CenterVertically
+        if (isLoading) {
+            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                CircularProgressIndicator(color = Color(0xFFB55D3E))
+            }
+        } else {
+            Column(modifier = Modifier.fillMaxSize()) {
+                // header fijo
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(Color(0xFFFDE0C4))
                 ) {
-                    IconButton(onClick = onBackClick) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Atrás", tint = Color(0xFFB55D3E))
-                    }
-                    Text(
-                        text = if (rolPerfil == "cuidador") "Perfil del Cuidador" else "Perfil de la Mascota",
-                        fontSize = 20.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = Color(0xFFB55D3E)
-                    )
-                }
-
-                // foto y datos
-                Row(
-                    modifier = Modifier.padding(horizontal = 24.dp, vertical = 12.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Box(
-                        modifier = Modifier.size(70.dp).background(if (rolPerfil == "cuidador") Color.White else Color(0xFFE2F0D9), CircleShape),
-                        contentAlignment = Alignment.Center
+                    Row(
+                        modifier = Modifier.fillMaxWidth().padding(top = 12.dp, start = 8.dp),
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Icon(if (rolPerfil == "cuidador") Icons.Default.Person else Icons.Default.Pets, contentDescription = null, tint = Color.Gray, modifier = Modifier.size(35.dp))
+                        IconButton(onClick = onBackClick) {
+                            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Atrás", tint = Color(0xFFB55D3E))
+                        }
+                        Text(
+                            text = if (rolPerfil == "cuidador") "Perfil del Cuidador" else "Perfil de la Mascota",
+                            fontSize = 20.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color(0xFFB55D3E)
+                        )
                     }
-                    Spacer(modifier = Modifier.width(16.dp))
-                    Column(modifier = Modifier.weight(1f)) {
-                        Text(nombrePerfil, fontSize = 18.sp, fontWeight = FontWeight.Bold)
-                        Text("Móstoles, España", fontSize = 14.sp, color = Color.Gray)
+
+                    Row(
+                        modifier = Modifier.padding(horizontal = 24.dp, vertical = 12.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Box(
+                            modifier = Modifier.size(70.dp).background(if (rolPerfil == "cuidador") Color.White else Color(0xFFE2F0D9), CircleShape),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(if (rolPerfil == "cuidador") Icons.Default.Person else Icons.Default.Pets, contentDescription = null, tint = Color.Gray, modifier = Modifier.size(35.dp))
+                        }
+                        Spacer(modifier = Modifier.width(16.dp))
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(nombrePerfil, fontSize = 18.sp, fontWeight = FontWeight.Bold)
+                            Text(usuarioBD?.ubicacion ?: "Ubicación desconocida", fontSize = 14.sp, color = Color.Gray)
+                        }
                     }
-                }
 
-                Spacer(modifier = Modifier.height(12.dp))
+                    Spacer(modifier = Modifier.height(12.dp))
 
-                Row(modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    BotonTabAjeno("Sobre mí", tabSeleccionada == 0) { tabSeleccionada = 0 }
-                    BotonTabAjeno(if (rolPerfil == "cuidador") "Servicios" else "Requisitos", tabSeleccionada == 1) { tabSeleccionada = 1 }
-                    BotonTabAjeno("Reseñas", tabSeleccionada == 2) { tabSeleccionada = 2 }
-                }
-            }
-
-            // contenido perfil
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .weight(1f)
-                    .padding(24.dp)
-                    .verticalScroll(rememberScrollState()),
-                verticalArrangement = Arrangement.spacedBy(16.dp)
-            ) {
-                if (tabSeleccionada == 0) {
-                    TarjetaInfo("Ubicación", "Móstoles, Madrid")
-                    TarjetaInfo(if (rolPerfil == "cuidador") "Estudios" else "Raza", if (rolPerfil == "cuidador") "Técnico Auxiliar de Veterinaria" else "Bichón Maltés")
-                    TarjetaInfo("Gustos / Personalidad", "Amante de los animales por vocación. Me especializo en el fascinante mundo de las mascotas...")
-                } else if (tabSeleccionada == 1) {
-                    TarjetaInfo(if (rolPerfil == "cuidador") "Tarifas" else "Requisitos", if (rolPerfil == "cuidador") "Paseo: 10€/h\nAlojamiento: 20€/noche" else "Vehículo propio y paciencia.")
-                } else if (tabSeleccionada == 2) {
-                    val listaResenas = listOf(
-                        Resena("Carlos M.", 5, "Un trato espectacular, muy recomendable. Sin duda repetiremos."),
-                        Resena("Laura G.", 4, "Todo muy bien, mucha comunicación en todo momento.")
-                    )
-                    listaResenas.forEach { resena ->
-                        TarjetaResena(resena = resena)
+                    Row(modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        BotonTabAjeno("Sobre mí", tabSeleccionada == 0) { tabSeleccionada = 0 }
+                        BotonTabAjeno(if (rolPerfil == "cuidador") "Servicios" else "Requisitos", tabSeleccionada == 1) { tabSeleccionada = 1 }
+                        BotonTabAjeno("Reseñas", tabSeleccionada == 2) { tabSeleccionada = 2 }
                     }
                 }
-            }
 
-            // botón contactar
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .background(Color.Transparent)
-                    .padding(24.dp)
-                    .navigationBarsPadding()
-            ) {
-                Button(
-                    onClick = { onContactarClick(idUsuario, nombrePerfil) },
-                    modifier = Modifier.fillMaxWidth().height(50.dp),
-                    shape = RoundedCornerShape(12.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = Color.Black)
+                // contenido perfil
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .weight(1f)
+                        .padding(24.dp)
+                        .verticalScroll(rememberScrollState()),
+                    verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
-                    Text("Contactar", color = Color.White, fontSize = 18.sp)
+                    if (tabSeleccionada == 0) {
+                        if (rolPerfil == "cuidador") {
+                            TarjetaInfo("Estudios", cuidadorBD?.estudios ?: "No especificado")
+                            TarjetaInfo("Sobre mí", cuidadorBD?.sobre_mi ?: "Sin descripción todavía.")
+
+                            // si tiene cualidades, las muestro separadas por un puntito
+                            if (!cuidadorBD?.cualidades_tags.isNullOrEmpty()) {
+                                TarjetaInfo("Cualidades", cuidadorBD?.cualidades_tags?.joinToString(" • ") ?: "")
+                            }
+                        } else {
+                            TarjetaInfo("Especie", mascotaBD?.especie ?: "No especificada")
+                            TarjetaInfo("Raza", mascotaBD?.raza ?: "No especificada")
+                            // <-- AQUÍ ESTÁ LA MAGIA: LEEMOS LA PERSONALIDAD REAL -->
+                            TarjetaInfo("Personalidad", mascotaBD?.personalidad_libre ?: "Sin descripción todavía.")
+
+                            if (!mascotaBD?.requisitos_tags.isNullOrEmpty()) {
+                                TarjetaInfo("Requisitos", mascotaBD?.requisitos_tags?.joinToString(" • ") ?: "")
+                            }
+                        }
+                    } else if (tabSeleccionada == 1) {
+                        if (rolPerfil == "cuidador") {
+                            TarjetaInfo("Tarifa", "${cuidadorBD?.tarifa ?: 0.0} €/hora")
+                        } else {
+                            // Si en la base de datos hay requisitos_tags, los mostramos aquí también o dejamos esto fijo por ahora
+                            TarjetaInfo("Requisitos extra", "A concretar en el chat.")
+                        }
+                    } else if (tabSeleccionada == 2) {
+                        val listaResenas = listOf(
+                            Resena("Carlos M.", 5, "Un trato espectacular, muy recomendable. Sin duda repetiremos."),
+                            Resena("Laura G.", 4, "Todo muy bien, mucha comunicación en todo momento.")
+                        )
+                        listaResenas.forEach { resena ->
+                            TarjetaResena(resena = resena)
+                        }
+                    }
+                }
+
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(Color.Transparent)
+                        .padding(24.dp)
+                        .navigationBarsPadding()
+                ) {
+                    Button(
+                        onClick = { onContactarClick(idUsuario, nombrePerfil) },
+                        modifier = Modifier.fillMaxWidth().height(50.dp),
+                        shape = RoundedCornerShape(12.dp),
+                        colors = ButtonDefaults.buttonColors(containerColor = Color.Black)
+                    ) {
+                        Text("Contactar", color = Color.White, fontSize = 18.sp)
+                    }
                 }
             }
         }
     }
 }
+
 
 @Composable
 fun RowScope.BotonTabAjeno(texto: String, seleccionado: Boolean, onClick: () -> Unit) {

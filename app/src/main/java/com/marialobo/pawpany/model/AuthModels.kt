@@ -44,22 +44,24 @@ data class UsuarioOut(
     val ubicacion: String? = "Ubicación desconocida"
 )
 
-// leer el Feed
 data class MascotaOut(
     val id: Int,
     val nombre: String,
     val especie: String?,
     val raza: String?,
     val personalidad_libre: String?,
-    val id_usuario: Int
+    val id_usuario: Int,
+    val requisitos_tags: List<String>?
 )
-
 data class PerfilCuidadorOut(
     val id: Int,
     val id_usuario: Int,
-    val estudios: String,
-    val tarifa: Double
+    val estudios: String?,
+    val tarifa: Double,
+    val sobre_mi: String?,
+    val cualidades_tags: List<String>?
 )
+
 
 data class MensajeOut(
     val id: Int,
